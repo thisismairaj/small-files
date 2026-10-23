@@ -2,6 +2,8 @@
 
 The small file problem, measured. The same 2,000,000 rows saved as 1, 10, 100, 1,000 and 5,000 Parquet files, then queried with DuckDB.
 
+Write-up with the numbers and what I did not test: [The small file problem, measured on disk and in Azure](https://medium.com/@immairaj/the-small-file-problem-measured-on-disk-and-in-azure-3494a0ece5bd).
+
 Think of a library where the same books sit in one box versus 5,000 envelopes. The books are identical. Fetching them is not.
 
 ## Run it
