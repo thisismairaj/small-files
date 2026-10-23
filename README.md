@@ -24,7 +24,6 @@ It takes under a minute, runs locally and costs nothing. `RESULTS.md` is written
 ## Not covered
 
 - Cold-cache and object-storage (S3, ADLS) timings. Each file is a separate request there, so the gap is likely larger. NOT MEASURED.
-- Fixing the problem with OPTIMIZE or compaction. That is the next piece.
 
 ## Layout
 
