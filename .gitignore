@@ -1,0 +1,7 @@
+.venv/
+work/
+content/
+.claude-brain/
+__pycache__/
+.pytest_cache/
+*.parquet
