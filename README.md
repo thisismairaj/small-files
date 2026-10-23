@@ -23,7 +23,7 @@ It takes under a minute, runs locally and costs nothing. `RESULTS.md` is written
 
 ## Not covered
 
-- Cold-cache and object-storage (S3, ADLS) timings. Each file is a separate request there, so the gap is likely larger. NOT MEASURED.
+- Cold-cache local timings, and other object stores (S3, GCS). Azure Blob is Part 3.
 
 ## Layout
 
@@ -41,3 +41,14 @@ It takes under a minute, runs locally and costs nothing. `RESULTS.md` is written
 - **VACUUM is what frees it, and it ends time travel:** the default retention is 7 days (Databricks docs) or one week (delta-rs docs), so a fresh table deletes nothing. The demo sets retention to 0 and turns the safety check off, which you should not do on a real table. After that, the disk was back to 8.9 MB and reading the pre-compaction version failed.
 - **The size drop is two effects:** merging alone took 33.9 MB to 16.6 MB. delta-rs compaction also switched the codec to ZSTD (the appends used Snappy), which took it to 8.9 MB.
 - **Other formats:** `OPTIMIZE` and `VACUUM` are Delta Lake names. Iceberg does the same jobs with `rewrite_data_files` and `expire_snapshots`. NOT TESTED here.
+
+## Part 3: the same layouts on Azure Blob Storage
+
+`scripts/run_azure.py` reads the same five layouts from an Azure Blob Storage account (US East) with DuckDB, from a laptop in Pakistan over a home connection. Results are in `RESULTS_AZURE.md`. The storage account was created for the test and deleted afterwards. The connection string is fetched from `az` at run time and never written to a file.
+
+- **Reading:** 1 file took 3.72 s, 100 files 10.32 s and 5,000 files 35.17 s (median of 5 runs). Same rows, same answer.
+- **The ratio is smaller, the cost is bigger:** 5,000 files were about 9.5 times slower than 1 file, against about 50 times locally. Part of that is the 1-file case now paying to download 30 MB. But the extra time went from about 0.6 s locally to about 31 s.
+- **Writing is slow too:** uploading with the Azure CLI took 44 s for the 1-file layout (30 MB), 4 min 12 s for 1,000 files and 20 min for 5,000.
+- **Noisy:** 100 files (10.32 s) came out slower than 1,000 files (9.53 s). That is the internet connection, not a real effect. Treat the shape as the result.
+- **Not measured:** cost. It was expected to be a few cents, and the actual figure is NOT MEASURED. Azure's cost data lags by about a day.
+- **Not tested:** S3 or GCS, a nearer region, and storage that is in the same region as the reader.
