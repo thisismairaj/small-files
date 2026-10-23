@@ -38,3 +38,24 @@ def median_seconds(folder, name, runs=5, strict=True):
         return answers, statistics.median(times), min(times)
     assert len(answers) == 1, "answers changed between runs"
     return answers.pop(), statistics.median(times), min(times)
+
+
+def run_files(files, name):
+    """Like run_query, for an explicit list of parquet files (a Delta table's active files)."""
+    listing = "[" + ", ".join("'" + Path(f).as_posix() + "'" for f in files) + "]"
+    con = duckdb.connect()
+    start = time.perf_counter()
+    answer = con.execute(QUERIES[name].format(glob="__X__").replace("'__X__'", listing)).fetchone()
+    seconds = time.perf_counter() - start
+    con.close()
+    return answer, seconds
+
+
+def median_files(files, name, runs=5):
+    answers, times = set(), []
+    for _ in range(runs):
+        answer, seconds = run_files(files, name)
+        answers.add(answer)
+        times.append(seconds)
+    assert len(answers) == 1, "answers changed between runs"
+    return answers.pop(), statistics.median(times)

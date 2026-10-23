@@ -32,3 +32,13 @@ It takes under a minute, runs locally and costs nothing. `RESULTS.md` is written
 - `src/smallfiles/bench.py` times the queries.
 - `scripts/run_demo.py` runs every layout and writes `RESULTS.md`.
 - `tests/` checks every layout holds the same rows and gives the same decimal sums.
+
+## Part 2: OPTIMIZE and VACUUM
+
+`scripts/run_optimize_vacuum.py` builds a Delta table from 500 small appends (2,000,000 rows), compacts it, checks time travel, then runs VACUUM. Results are in `RESULTS_OPTIMIZE.md`. It uses the open-source `deltalake` (delta-rs) library, not Databricks, and it takes about a minute.
+
+- **Speed:** the total query went from 0.093 s on 500 files to 0.015 s on 1 file.
+- **OPTIMIZE does not free space:** the old files stay on disk for time travel. Disk use went from 33.9 MB to 42.8 MB after compaction.
+- **VACUUM is what frees it, and it ends time travel:** the default retention is 7 days (Databricks docs) or one week (delta-rs docs), so a fresh table deletes nothing. The demo sets retention to 0 and turns the safety check off, which you should not do on a real table. After that, the disk was back to 8.9 MB and reading the pre-compaction version failed.
+- **The size drop is two effects:** merging alone took 33.9 MB to 16.6 MB. delta-rs compaction also switched the codec to ZSTD (the appends used Snappy), which took it to 8.9 MB.
+- **Other formats:** `OPTIMIZE` and `VACUUM` are Delta Lake names. Iceberg does the same jobs with `rewrite_data_files` and `expire_snapshots`. NOT TESTED here.

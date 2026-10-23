@@ -3,7 +3,7 @@ name = "small-files"
 version = "0.0.1"
 description = "The small file problem, measured: the same rows as 1 file or 5,000."
 requires-python = ">=3.12"
-dependencies = ["duckdb"]
+dependencies = ["duckdb", "deltalake", "pyarrow"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
